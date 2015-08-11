@@ -10,3 +10,5 @@ description = "First Person Tetris"
 
 [dependencies]
 piston_window = "*"
+rand = "*"
+time = "*"
