@@ -11,10 +11,7 @@ extern crate piston_window;
 extern crate rand;
 extern crate time;
 
-use piston_window::{PistonWindow, WindowSettings,
-                    PressEvent, Button, Key,
-                    UpdateEvent,
-                    RenderEvent};
+use piston_window::{Button, Key, PistonWindow, PressEvent, UpdateEvent, WindowSettings};
 
 mod board;
 mod tetrimino;
@@ -31,15 +28,13 @@ fn main() {
     let window_width: u32 = (CELL_SIZE as u32) * (board.height() as u32) * 2;
     let window_height: u32 = (CELL_SIZE as u32) * (board.height() as u32) * 2;
 
-    let window: PistonWindow = WindowSettings::new("FPT", [window_width, window_height])
+    let mut window: PistonWindow = WindowSettings::new("FPT", [window_width, window_height])
         .exit_on_esc(true)
         .build()
         .unwrap();
 
-    for e in window {
-        if let Some(_args) = e.render_args() {
-            e.draw_2d(|ctx, g2d| render::render(ctx, g2d, CELL_SIZE, &board));
-        }
+    while let Some(e) = window.next() {
+        let _ = window.draw_2d(&e, |ctx, g2d| render::render(ctx, g2d, CELL_SIZE, &board));
 
         if let Some(_args) = e.update_args() {
             board.fall(1000);
@@ -47,11 +42,21 @@ fn main() {
 
         if let Some(Button::Keyboard(key)) = e.press_args() {
             match key {
-                Key::Up    | Key::W | Key::K => { board.advance(true); }
-                Key::Down  | Key::S | Key::J => { board.advance(false); }
-                Key::Left  | Key::A | Key::H => { board.rotate(true); }
-                Key::Right | Key::D | Key::L => { board.rotate(false); }
-                Key::Space => { board.fall(0); }
+                Key::Up | Key::W | Key::K => {
+                    board.advance(true);
+                }
+                Key::Down | Key::S | Key::J => {
+                    board.advance(false);
+                }
+                Key::Left | Key::A | Key::H => {
+                    board.rotate(true);
+                }
+                Key::Right | Key::D | Key::L => {
+                    board.rotate(false);
+                }
+                Key::Space => {
+                    board.fall(0);
+                }
                 _ => {}
             }
         }

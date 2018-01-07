@@ -9,6 +9,6 @@ keywords = ["game"]
 description = "First Person Tetris"
 
 [dependencies]
-piston_window = "0.37"
-rand = "0.3"
+piston_window = "0.74"
+rand = "0.4"
 time = "0.1"
