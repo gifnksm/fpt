@@ -1,28 +1,28 @@
-use piston_window::{self, Context, G2d, Transformed, polygon, rectangle};
 use piston_window::types::Color;
+use piston_window::{self, polygon, rectangle, Context, G2d, Transformed};
 use rand::Rng;
 
 use board::{Board, Cell};
 use tetrimino::Shape as MinoShape;
 
 const BORDER_RATIO: f64 = 0.1;
-const TOP_LEFT:     [f64; 2] = [0.0, 0.0];
-const TOP_RIGHT:    [f64; 2] = [1.0, 0.0];
-const BOTTOM_LEFT:  [f64; 2] = [0.0, 1.0];
+const TOP_LEFT: [f64; 2] = [0.0, 0.0];
+const TOP_RIGHT: [f64; 2] = [1.0, 0.0];
+const BOTTOM_LEFT: [f64; 2] = [0.0, 1.0];
 const BOTTOM_RIGHT: [f64; 2] = [1.0, 1.0];
 const LIGHT_RATIO: f32 = 0.6;
-const DARK_RATIO:  f32 = 0.6;
+const DARK_RATIO: f32 = 0.6;
 
-const BLACK:   Color = [0.0, 0.0, 0.0, 1.0];
-const WHITE:   Color = [1.0, 1.0, 1.0, 1.0];
-const GRAY:    Color = [0.5, 0.5, 0.5, 1.0];
+const BLACK: Color = [0.0, 0.0, 0.0, 1.0];
+const WHITE: Color = [1.0, 1.0, 1.0, 1.0];
+const GRAY: Color = [0.5, 0.5, 0.5, 1.0];
 
-const CYAN:    Color = [0.0, 1.0, 1.0, 1.0];
-const YELLOW:  Color = [1.0, 1.0, 0.0, 1.0];
-const LIME:    Color = [0.0, 1.0, 0.0, 1.0];
-const RED:     Color = [1.0, 0.0, 0.0, 1.0];
-const BLUE:    Color = [0.0, 0.0, 1.0, 1.0];
-const ORANGE:  Color = [1.0, 0.5, 0.0, 1.0];
+const CYAN: Color = [0.0, 1.0, 1.0, 1.0];
+const YELLOW: Color = [1.0, 1.0, 0.0, 1.0];
+const LIME: Color = [0.0, 1.0, 0.0, 1.0];
+const RED: Color = [1.0, 0.0, 0.0, 1.0];
+const BLUE: Color = [0.0, 0.0, 1.0, 1.0];
+const ORANGE: Color = [1.0, 0.5, 0.0, 1.0];
 const MAGENTA: Color = [1.0, 0.0, 1.0, 1.0];
 
 impl MinoShape {
@@ -36,7 +36,7 @@ impl MinoShape {
             T::Z => RED,
             T::J => BLUE,
             T::L => ORANGE,
-            T::T => MAGENTA
+            T::T => MAGENTA,
         }
     }
 }
@@ -48,7 +48,7 @@ impl Cell {
         match *self {
             C::Empty => BLACK,
             C::Wall => GRAY,
-            C::Block(b) => b.color()
+            C::Block(b) => b.color(),
         }
     }
 }
@@ -56,10 +56,12 @@ impl Cell {
 fn compose_color(c0: Color, c1: Color, c1_alpha: f32) -> Color {
     debug_assert!(0.0 <= c1_alpha && c1_alpha <= 1.0);
     let c0_alpha = 1.0 - c1_alpha;
-    [c0[0] * c0_alpha + c1[0] * c1_alpha,
-     c0[1] * c0_alpha + c1[1] * c1_alpha,
-     c0[2] * c0_alpha + c1[2] * c1_alpha,
-     1.0]
+    [
+        c0[0] * c0_alpha + c1[0] * c1_alpha,
+        c0[1] * c0_alpha + c1[1] * c1_alpha,
+        c0[2] * c0_alpha + c1[2] * c1_alpha,
+        1.0,
+    ]
 }
 
 pub fn render<R: Rng>(ctx: Context, g2d: &mut G2d, scale: f64, board: &Board<R>) {
@@ -71,7 +73,8 @@ pub fn render<R: Rng>(ctx: Context, g2d: &mut G2d, scale: f64, board: &Board<R>)
 
     let deg = board.rotation() as f64 * 90.0 - 180.0;
 
-    let board_trans = ctx.transform
+    let board_trans = ctx
+        .transform
         .trans(vsz[0] / 2.0, vsz[1] / 2.0)
         .scale(scale, scale)
         .rot_deg(deg);
@@ -87,10 +90,20 @@ pub fn render<R: Rng>(ctx: Context, g2d: &mut G2d, scale: f64, board: &Board<R>)
             if cell != Cell::Empty {
                 let color = cell.color();
                 let light_color = compose_color(color, WHITE, LIGHT_RATIO);
-                let dark_color  = compose_color(color, BLACK, DARK_RATIO);
+                let dark_color = compose_color(color, BLACK, DARK_RATIO);
 
-                polygon(light_color, &[TOP_LEFT, BOTTOM_LEFT, TOP_RIGHT], transform, g2d);
-                polygon(dark_color, &[BOTTOM_RIGHT, BOTTOM_LEFT, TOP_RIGHT], transform, g2d);
+                polygon(
+                    light_color,
+                    &[TOP_LEFT, BOTTOM_LEFT, TOP_RIGHT],
+                    transform,
+                    g2d,
+                );
+                polygon(
+                    dark_color,
+                    &[BOTTOM_RIGHT, BOTTOM_LEFT, TOP_RIGHT],
+                    transform,
+                    g2d,
+                );
                 rectangle(color, square, transform, g2d);
             }
         }

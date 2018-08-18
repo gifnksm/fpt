@@ -1,22 +1,24 @@
-use std::ops::Index;
 use rand::Rng;
+use std::ops::Index;
 use time::{self, Tm};
 
 use tetrimino::Shape as MinoShape;
-use tetrimino::{Tetrimino, Point};
+use tetrimino::{Point, Tetrimino};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Cell {
     Empty,
     Wall,
-    Block(MinoShape)
+    Block(MinoShape),
 }
 
 impl Default for Cell {
-    fn default() -> Cell { Cell::Empty }
+    fn default() -> Cell {
+        Cell::Empty
+    }
 }
 
-const BOARD_WIDTH: usize  = 12;
+const BOARD_WIDTH: usize = 12;
 const BOARD_HEIGHT: usize = 20;
 
 #[derive(Copy, Clone, Debug)]
@@ -24,15 +26,16 @@ struct Moving {
     tetrimino: Tetrimino,
     rotation: i32,
     x: i32,
-    y: i32
+    y: i32,
 }
 
 impl Moving {
     fn new_random<R: Rng>(rng: &mut R, x0: i32, y0: i32) -> Moving {
         Moving {
-            tetrimino: rng.gen(),
+            tetrimino: Tetrimino::choose(rng),
             rotation: 0,
-            x: x0, y: y0
+            x: x0,
+            y: y0,
         }
     }
 
@@ -42,7 +45,7 @@ impl Moving {
             (1, true) | (3, false) => self.x += 1,
             (2, true) | (0, false) => self.y -= 1,
             (3, true) | (1, false) => self.x -= 1,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
         self
     }
@@ -90,7 +93,7 @@ pub struct Board<'a, R: Rng + 'a> {
     fixed_cells: Matrix,
     merged_cells: Matrix,
     last_fall: Tm,
-    finished: bool
+    finished: bool,
 }
 
 impl<'a, R: Rng> Board<'a, R> {
@@ -100,7 +103,7 @@ impl<'a, R: Rng> Board<'a, R> {
             mat[0][y] = Cell::Wall;
             mat[BOARD_WIDTH - 1][y] = Cell::Wall;
         }
-        for x in 1..BOARD_WIDTH-1 {
+        for x in 1..BOARD_WIDTH - 1 {
             mat[x][BOARD_HEIGHT - 1] = Cell::Wall;
         }
 
@@ -110,7 +113,7 @@ impl<'a, R: Rng> Board<'a, R> {
             fixed_cells: mat,
             merged_cells: mat,
             last_fall: time::now(),
-            finished: false
+            finished: false,
         }
     }
 
@@ -139,7 +142,7 @@ impl<'a, R: Rng> Board<'a, R> {
     pub fn fall(&mut self, thresh_in_msec: i64) {
         let now = time::now();
         if (now - self.last_fall).num_milliseconds() < thresh_in_msec {
-            return
+            return;
         }
         self.last_fall = now;
 
@@ -152,7 +155,7 @@ impl<'a, R: Rng> Board<'a, R> {
                 self.moving = None;
                 self.clear_fulfilled();
                 self.merged_cells = self.fixed_cells;
-                return
+                return;
             }
 
             self.moving = Some(new_mv);
@@ -169,24 +172,28 @@ impl<'a, R: Rng> Board<'a, R> {
         self.merge_boards();
     }
 
-    pub fn width(&self) -> i32 { BOARD_WIDTH as i32 }
-    pub fn height(&self) -> i32 { BOARD_HEIGHT as i32 }
+    pub fn width(&self) -> i32 {
+        BOARD_WIDTH as i32
+    }
+    pub fn height(&self) -> i32 {
+        BOARD_HEIGHT as i32
+    }
     pub fn rotation(&self) -> i32 {
         match self.moving {
             Some(mv) => mv.rotation,
-            None => 0
+            None => 0,
         }
     }
     pub fn x(&self) -> i32 {
         match self.moving {
             Some(mv) => mv.x + mv.base().0,
-            None => self.width() / 2
+            None => self.width() / 2,
         }
     }
     pub fn y(&self) -> i32 {
         match self.moving {
             Some(mv) => mv.y + mv.base().1,
-            None => 0
+            None => 0,
         }
     }
 
@@ -197,29 +204,37 @@ impl<'a, R: Rng> Board<'a, R> {
             for &(dx, dy) in &mv.points() {
                 let x = mv.x + dx;
                 let y = mv.y + dy;
-                if y < 0 { continue }
+                if y < 0 {
+                    continue;
+                }
                 debug_assert_eq!(self.merged_cells[x as usize][y as usize], Cell::Empty);
                 self.merged_cells[x as usize][y as usize] = Cell::Block(mv.shape());
             }
         }
     }
     fn can_locate(&self, mv: Moving) -> bool {
-        if mv.y < 0 { return false }
+        if mv.y < 0 {
+            return false;
+        }
 
-        mv.points()
-            .iter()
-            .all(|&(dx, dy)| {
-                let x = mv.x + dx;
-                let y = mv.y + dy;
-                if x < 0 || x >= self.width() { return false }
-                if y < 0 { return true }
-                if y >= self.height() { return true }
-                self.fixed_cells[x as usize][y as usize] == Cell::Empty
-            })
+        mv.points().iter().all(|&(dx, dy)| {
+            let x = mv.x + dx;
+            let y = mv.y + dy;
+            if x < 0 || x >= self.width() {
+                return false;
+            }
+            if y < 0 {
+                return true;
+            }
+            if y >= self.height() {
+                return true;
+            }
+            self.fixed_cells[x as usize][y as usize] == Cell::Empty
+        })
     }
     fn clear_fulfilled(&mut self) {
         let mut y_dst = self.height() - 2;
-        for y_src in (0..self.height()-1).rev() {
+        for y_src in (0..self.height() - 1).rev() {
             let filled = (1..self.width() - 1).all(|x| {
                 let cell = self.fixed_cells[x as usize][y_src as usize];
                 debug_assert!(cell != Cell::Wall);
@@ -234,8 +249,8 @@ impl<'a, R: Rng> Board<'a, R> {
                 y_dst -= 1;
             }
         }
-        for y in 0..y_dst+1 {
-            for x in 1..self.width()-1 {
+        for y in 0..y_dst + 1 {
+            for x in 1..self.width() - 1 {
                 self.fixed_cells[x as usize][y as usize] = Cell::Empty;
             }
         }
@@ -245,6 +260,6 @@ impl<'a, R: Rng> Board<'a, R> {
 impl<'a, R: Rng> Index<Point> for Board<'a, R> {
     type Output = Cell;
     fn index<'b>(&'b self, (x, y): Point) -> &'b Cell {
-        return &self.merged_cells[x as usize][y as usize]
+        return &self.merged_cells[x as usize][y as usize];
     }
 }
