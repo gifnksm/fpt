@@ -14,8 +14,8 @@ extern crate time;
 use piston_window::{Button, Key, PistonWindow, PressEvent, UpdateEvent, WindowSettings};
 
 mod board;
-mod tetrimino;
 mod render;
+mod tetrimino;
 
 use board::Board;
 
