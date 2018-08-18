@@ -32,7 +32,7 @@ struct Moving {
 impl Moving {
     fn new_random<R: Rng>(rng: &mut R, x0: i32, y0: i32) -> Moving {
         Moving {
-            tetrimino: rng.gen(),
+            tetrimino: Tetrimino::choose(rng),
             rotation: 0,
             x: x0,
             y: y0,

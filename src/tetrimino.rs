@@ -1,4 +1,4 @@
-use rand::{Rand, Rng};
+use rand::Rng;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Shape {
@@ -25,10 +25,9 @@ pub struct Tetrimino {
     pub rotates: [Rotate; 4],
 }
 
-impl Rand for Tetrimino {
-    fn rand<R: Rng>(rng: &mut R) -> Tetrimino {
-        let idx = rng.gen_range(0, TETRIMINO.len());
-        TETRIMINO[idx]
+impl Tetrimino {
+    pub fn choose(rng: &mut impl Rng) -> Self {
+        *rng.choose(TETRIMINO).unwrap()
     }
 }
 
